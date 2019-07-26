@@ -18,6 +18,7 @@
 # along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Description: Configure Security Onion to Import NIDS Rules and Bro Intel from MISP
+# Modified by Slipperyclock 7/2019
 
 source /etc/misp/mispcfg
 
@@ -33,28 +34,44 @@ done
 # if NIDS_RULES enabled, then get NIDS rules
 if [[ $NIDS_RULES == "yes" ]];then
 	# get NIDS rules
-	wget -q --no-check-certificate --header="Authorization: $APIKEY"  $PROTOCOL://$IP/events/nids/$ENGINE/download -O $RULE_PATH
-	# Set correct perms
-	chown sguil:sguil $RULE_PATH
-	chmod 644 $RULE_PATH
+	wget -t 2 -q --no-check-certificate --header="Authorization: $APIKEY"  $PROTOCOL://$IP/events/nids/$ENGINE/download -O $NIDS_TEMP_PATH
+# Test Rules for valid size.
+        FILESIZE=$(stat --printf="%s" $NIDS_TEMP_PATH)
+        if [ $FILESIZE -lt 3 ]; then
+                echo "Filesize: $FILESIZE  Is too small, skipping Update"
+        else
+                echo "Filesize: $FILESIZE is good.  Updating rules"
+                mv $NIDS_TEMP_PATH $RULE_PATH
+        # Set correct perms
+                chown sguil:sguil $RULE_PATH
+                chmod 644 $RULE_PATH
+        fi
 else
 	:
 fi
 
 # if Bro Intel enabled, then get Bro Intel
 if [[ $INTEL == "yes" ]];then
-        wget -q --no-check-certificate --header="Authorization: $APIKEY"  $PROTOCOL://$IP/attributes/bro/download/all -O $INTEL_PATH
-	LOAD_BRO="/opt/bro/share/bro/intel/__load__.bro"
-	if grep -q misp $LOAD_BRO; then
-        	# Already appended to list of intel files
-        	echo "Already configured!"
-        	:
-	else
-        	# Add misp-intel to list of intel files
-        	sed -i 's#.*"/opt/bro/share/bro/intel/intel.dat"#        "/opt/bro/share/bro/intel/intel.dat",#' $LOAD_BRO
-        	sed -i '/.*intel.dat",/a \ \ \ \ \ \ \ \ "\/opt\/bro\/share\/bro\/intel\/misp-intel.dat\"' $LOAD_BRO
+        wget -t 2 -q --no-check-certificate --header="Authorization: $APIKEY"  $PROTOCOL://$IP/attributes/bro/download/all -O $INTEL_TEMP_PATH
+	# Test Rules for valid size.
+        FILESIZE=$(stat --printf="%s" $INTEL_TEMP_PATH)
+        if [ $FILESIZE -lt 3 ]; then
+                echo "Filesize: $FILESIZE  Is too small, skipping Update"
+        else
+                echo "Filesize: $FILESIZE is good.  Updating rules"
+                mv $NIDS_TEMP_PATH $INTEL_PATH
+		LOAD_BRO="/opt/bro/share/bro/intel/__load__.bro"
+		if grep -q misp $LOAD_BRO; then
+			# Already appended to list of intel files
+			echo "Already configured!"
+			:
+		else
+			# Add misp-intel to list of intel files
+			sed -i 's#.*"/opt/bro/share/bro/intel/intel.dat"#        "/opt/bro/share/bro/intel/intel.dat",#' $LOAD_BRO
+			sed -i '/.*intel.dat",/a \ \ \ \ \ \ \ \ "\/opt\/bro\/share\/bro\/intel\/misp-intel.dat\"' $LOAD_BRO
+		fi
+		nsm_sensor_ps-restart --only-bro
 	fi
-	nsm_sensor_ps-restart --only-bro
 else
         :
 fi
