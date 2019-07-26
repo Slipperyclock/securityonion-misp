@@ -34,7 +34,7 @@ done
 # if NIDS_RULES enabled, then get NIDS rules
 if [[ $NIDS_RULES == "yes" ]];then
 	# get NIDS rules
-	wget -t 2 -q --no-check-certificate --header="Authorization: $APIKEY"  $PROTOCOL://$IP/events/nids/$ENGINE/download -O $NIDS_TEMP_PATH
+	wget -t 2 -q --no-check-certificate --header="Authorization: $APIKEY"  $PROTOCOL://$IP/events/nids/$ENGINE/download/null/null/null/null/null/3d -O $NIDS_TEMP_PATH
 # Test Rules for valid size.
         FILESIZE=$(stat --printf="%s" $NIDS_TEMP_PATH)
         if [ $FILESIZE -lt 3 ]; then
