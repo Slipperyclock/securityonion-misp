@@ -59,7 +59,7 @@ if [[ $INTEL == "yes" ]];then
                 echo "Filesize: $FILESIZE  Is too small, skipping Update"
         else
                 echo "Filesize: $FILESIZE is good.  Updating rules"
-                mv $NIDS_TEMP_PATH $INTEL_PATH
+                mv $INTEL_TEMP_PATH $INTEL_PATH
 		LOAD_BRO="/opt/bro/share/bro/intel/__load__.bro"
 		if grep -q misp $LOAD_BRO; then
 			# Already appended to list of intel files
