@@ -17,6 +17,7 @@
 # along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Description: Configure Security Onion to Import NIDS Rules and Bro Intel from MISP
+# Modified by Slipperyclock 7/2019
 
 IP=""
 PROTOCOL=""
@@ -25,4 +26,5 @@ INTEL=""
 NIDS_RULES=""
 INTEL_PATH="/opt/bro/share/bro/intel/misp-intel.dat"
 RULE_PATH="/etc/nsm/rules/local.misp.rules"
-
+NIDS_TEMP_PATH="/tmp/nids.temp.rules"
+INTEL_TEMP_PATH="/tmp/intel.temp.dat"
